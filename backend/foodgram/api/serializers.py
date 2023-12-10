@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 from recipes.models import Tag, Recipe, Ingredient, ShoppingCart, IngredientAmount
 
+from recipes.models import FavoritesRecipes
+
 User = get_user_model()
 
 
@@ -115,5 +117,31 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
             if recipe.shopping_carts.filter(user=user, recipe=recipe):
                 raise serializers.ValidationError(
                     'Рецепт уже добавлен в список покупок.'
+                )
+        return data
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Сериалайзер для списка покупок."""
+
+    user = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=User.objects.all(),
+        slug_field='username'
+    )
+
+    class Meta:
+        model = FavoritesRecipes
+        read_only_fields = ('user', 'recipe')
+        exclude = ('recipe',)
+
+    def validate(self, data):
+        request = self.context.get('request')
+        user = request.user
+        recipe_id = self.context.get('view').kwargs.get('recipe_id')
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if request.method == 'POST':
+            if recipe.favorite_recipes.filter(user=user, recipe=recipe):
+                raise serializers.ValidationError(
+                    'Рецепт уже добавлен в избранное.'
                 )
         return data

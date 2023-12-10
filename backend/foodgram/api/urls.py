@@ -3,7 +3,7 @@ from rest_framework.authtoken import views
 from rest_framework.routers import SimpleRouter
 
 from users.views import UserViewSet, get_token, logout
-from .views import TagViewSet, RecipeViewSet, IngredientViewSet, ShoppingCartViewSet
+from .views import TagViewSet, RecipeViewSet, IngredientViewSet, ShoppingCartViewSet, FavoriteViewSet
 
 router = SimpleRouter()
 
@@ -13,12 +13,32 @@ router.register('users', UserViewSet, basename='users')
 router.register('ingredients', IngredientViewSet, basename='ingredients')
 # router.register(
 #     r'recipes/(?P<recipe_id>\d+)/shopping_cart',
-#     ShoppingCartViewSet,
+#     ShoppingCartViewSet.as_view,
 #     basename='shopping_cart'
 # )
 
 urlpatterns = [
     path('', include(router.urls)),
+    path(
+        'recipes/<int:recipe_id>/shopping_cart/',
+        ShoppingCartViewSet.as_view(
+            {
+                'post': 'create',
+                'delete': 'destroy'
+            }
+        ),
+        name='shopping_cart'
+    ),
+    path(
+        'recipes/<int:recipe_id>/favorite/',
+        FavoriteViewSet.as_view(
+            {
+                'post': 'create',
+                'delete': 'destroy'
+            }
+        ),
+        name='favorite_recipe'
+    ),
     path(
         'auth/token/login/',
         get_token,

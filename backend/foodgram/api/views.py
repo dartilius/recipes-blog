@@ -10,9 +10,9 @@ from api.serializers import (
     TagSerializer,
     RecipeSerializer,
     ShoppingCartSerializer,
-    IngredientSerializer
+    IngredientSerializer, FavoriteSerializer
 )
-from recipes.models import Tag, Recipe, ShoppingCart, Ingredient
+from recipes.models import Tag, Recipe, ShoppingCart, Ingredient, FavoritesRecipes
 
 
 class TagViewSet(
@@ -45,36 +45,33 @@ class RecipeViewSet(
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
 
-    @action(
-        ['POST', 'DELETE'],
-        url_path='shopping_cart',
-        detail=True,
-        permission_classes=(IsAuthenticated,)
-    )
-    def shopping_cart(self, request, pk):
-        serializer = ShoppingCartSerializer(
-            data=request.data,
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        if request.method == 'POST':
-            serializer.save(
-                user=self.request.user,
-                recipe=get_object_or_404(
-                    Recipe,
-                    id=pk
-                )
-            )
-
-        if request.method == 'DELETE':
-            ShoppingCart.objects.filter(
-                user=request.user,
-                recipe=get_object_or_404(
-                    Recipe,
-                    id=pk
-                )
-            ).delete()
+    # @action(
+    #     ['POST', 'DELETE'],
+    #     url_path='shopping_cart',
+    #     detail=True,
+    #     permission_classes=(IsAuthenticated,)
+    # )
+    # def shopping_cart(self, request, pk):
+    #     serializer = ShoppingCartSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #
+    #     if request.method == 'POST':
+    #         serializer.save(
+    #             user=self.request.user,
+    #             recipe=get_object_or_404(
+    #                 Recipe,
+    #                 id=pk
+    #             )
+    #         )
+    #
+    #     if request.method == 'DELETE':
+    #         ShoppingCart.objects.filter(
+    #             user=request.user,
+    #             recipe=get_object_or_404(
+    #                 Recipe,
+    #                 id=pk
+    #             )
+    #         ).delete()
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
@@ -82,6 +79,7 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 
     serializer_class = ShoppingCartSerializer
     permission_classes = (IsAuthenticated,)
+    lookup_field = 'recipe_id'
 
     def get_recipe(self):
         recipe_id = self.kwargs.get('recipe_id')
@@ -92,3 +90,41 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, recipe=self.get_recipe())
+
+    @action(
+        detail=False,
+        methods=['DELETE']
+    )
+    def destroy_shopping_cart(self):
+        ShoppingCart.objects.filter(
+            user=self.request.user,
+            recipe=self.get_recipe()
+        ).delete()
+
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    """Вьюсет для списка покупок."""
+
+    serializer_class = FavoriteSerializer
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'recipe_id'
+
+    def get_recipe(self):
+        recipe_id = self.kwargs.get('recipe_id')
+        return get_object_or_404(Recipe, id=recipe_id)
+
+    def get_queryset(self):
+        return self.get_recipe().favorite_recipes.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, recipe=self.get_recipe())
+
+    @action(
+        detail=False,
+        methods=['DELETE']
+    )
+    def destroy_favorite(self):
+        FavoritesRecipes.objects.filter(
+            user=self.request.user,
+            recipe=self.get_recipe()
+        ).delete()
