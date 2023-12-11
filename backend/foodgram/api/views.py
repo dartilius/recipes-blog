@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from requests import Response
@@ -44,34 +45,16 @@ class RecipeViewSet(
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
+    # filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
 
-    # @action(
-    #     ['POST', 'DELETE'],
-    #     url_path='shopping_cart',
-    #     detail=True,
-    #     permission_classes=(IsAuthenticated,)
-    # )
-    # def shopping_cart(self, request, pk):
-    #     serializer = ShoppingCartSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
+    # search_fields = ('is_favorited', 'is_in_shopping_cart', 'tags')
+    # filterset_fields = ('is_favorited', 'is_in_shopping_cart', 'tags')
     #
-    #     if request.method == 'POST':
-    #         serializer.save(
-    #             user=self.request.user,
-    #             recipe=get_object_or_404(
-    #                 Recipe,
-    #                 id=pk
-    #             )
-    #         )
-    #
-    #     if request.method == 'DELETE':
-    #         ShoppingCart.objects.filter(
-    #             user=request.user,
-    #             recipe=get_object_or_404(
-    #                 Recipe,
-    #                 id=pk
-    #             )
-    #         ).delete()
+    # def get_queryset(self):
+    #     return Recipe.objects.annotate(
+    #         is_favorited = Count('favorite_recipes'),
+    #         is_in_shopping_cart = Count('shopping_carts')
+    #     )
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):

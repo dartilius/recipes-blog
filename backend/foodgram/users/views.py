@@ -8,8 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import AccessToken
 
+from api.tokens import CustomAccessToken
 from users.models import User
 from users.serializers import UserSerializer, TokenSerializer, ChangePasswordSerializer, FollowSerializer
 
@@ -26,6 +26,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.save(data=self.request.data)
         user = User.objects.get(username=self.request.data['username'])
         user.set_password(self.request.data['password'])
+        user.save()
 
     @action(
         ['GET'],
@@ -68,16 +69,16 @@ def get_token(request):
     email = request.data.get('email')
     user = get_object_or_404(User, email=email)
     return Response(
-        {'auth_token': str(AccessToken.for_user(user))},
+        {'auth_token': str(CustomAccessToken.for_user(user))},
         status=status.HTTP_201_CREATED
     )
 
 
-@api_view
+@api_view(['POST'])
 def logout(request):
     if not request.user.is_authenticated:
         return Response(status=HTTP_401_UNAUTHORIZED)
-    AccessToken.for_user(request.user).delete()
+    request.auth.blacklist()
     return Response(status=HTTP_204_NO_CONTENT)
 
 

@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'is_subscribed'
         )
-        read_only_fields = ('is_subscribed',)
+        read_only_fields = ('is_subscribed', 'id')
         model = User
 
     def get_is_subscribed(self, obj):

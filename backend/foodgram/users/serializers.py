@@ -18,12 +18,29 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'is_subscribed',
         )
-        read_only_fields = ('is_subscribed',)
+        read_only_fields = ('is_subscribed', 'id')
         model = User
 
 
     def get_is_subscribed(self, obj):
         return True
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                "Недопустимый username."
+            )
+        return value
+
+
+    def create(self, data):
+        User.objects.create(
+            username=data['username'],
+            email=data['email'],
+            first_name=data['first_name'],
+            last_name=data['last_name']
+        )
+        return data
 
 
 class TokenSerializer(serializers.Serializer):

@@ -57,6 +57,8 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(Tag)
     ingredients = models.ManyToManyField(Ingredient)
+    # is_favorited = models.ManyToManyField(User, null=True, blank=True)
+    # is_in_shopping_cart = models.ManyToManyField(User, null=True, blank=True)
 
 
 class IngredientAmount(models.Model):
