@@ -21,6 +21,9 @@ class Tag(models.Model):
         null=True
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Ingredient(models.Model):
     """Ингредиент."""
@@ -32,6 +35,24 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
         max_length=200
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class IngredientAmount(models.Model):
+    """Ингредиенты в рецепте."""
+
+    ingredient_amount_pk = models.AutoField(primary_key=True)
+    amount = models.PositiveIntegerField(
+        verbose_name='Количество'
+    )
+    id = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиент',
+        related_name='ingredients_amount'
     )
 
 
@@ -56,29 +77,12 @@ class Recipe(models.Model):
         blank=True
     )
     tags = models.ManyToManyField(Tag)
-    ingredients = models.ManyToManyField(Ingredient)
+    ingredients = models.ManyToManyField(IngredientAmount)
     # is_favorited = models.ManyToManyField(User, null=True, blank=True)
     # is_in_shopping_cart = models.ManyToManyField(User, null=True, blank=True)
 
-
-class IngredientAmount(models.Model):
-    """Ингредиенты в рецепте."""
-
-    amount = models.PositiveIntegerField(
-        verbose_name='Количество'
-    )
-    ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.CASCADE,
-        verbose_name='Ингредиент',
-        related_name='ingredients_amount'
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        verbose_name='Рецепт',
-        related_name='recipe_amount'
-    )
+    def __str__(self):
+        return self.name
 
 
 class FavoritesRecipes(models.Model):

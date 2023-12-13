@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from recipes.models import Tag, Recipe, Ingredient
+from recipes.models import Tag, Recipe, Ingredient, IngredientAmount
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -27,6 +27,14 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name', 'measurement_unit')
 
 
+class IngredientAmountAdmin(admin.ModelAdmin):
+    """Ингредиент."""
+
+    list_display = ('id', 'amount')
+    list_filter = ('id', 'amount')
+    search_fields = ('id', 'amount')
+
+
 class RecipeTagAdmin(admin.ModelAdmin):
     """Теги рецептов."""
 
@@ -45,5 +53,6 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(IngredientAmount, IngredientAmountAdmin)
 # admin.site.register(RecipeTag, RecipeTagAdmin)
 # admin.site.register(RecipeIngredient, RecipeIngredientAdmin)

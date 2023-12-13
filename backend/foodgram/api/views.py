@@ -13,7 +13,8 @@ from api.serializers import (
     ShoppingCartSerializer,
     IngredientSerializer, FavoriteSerializer
 )
-from recipes.models import Tag, Recipe, ShoppingCart, Ingredient, FavoritesRecipes
+from recipes.models import Tag, Recipe, ShoppingCart, Ingredient, FavoritesRecipes, IngredientAmount
+from users.models import User
 
 
 class TagViewSet(
@@ -37,24 +38,17 @@ class IngredientViewSet(viewsets.ModelViewSet):
     lookup_field = 'name'
 
 
-class RecipeViewSet(
-    viewsets.ModelViewSet
-):
+class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Recipe."""
 
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
-    # filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
 
-    # search_fields = ('is_favorited', 'is_in_shopping_cart', 'tags')
-    # filterset_fields = ('is_favorited', 'is_in_shopping_cart', 'tags')
-    #
-    # def get_queryset(self):
-    #     return Recipe.objects.annotate(
-    #         is_favorited = Count('favorite_recipes'),
-    #         is_in_shopping_cart = Count('shopping_carts')
-    #     )
+    def perform_create(self, serializer):
+        serializer.save(
+            author=self.request.user
+        )
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
