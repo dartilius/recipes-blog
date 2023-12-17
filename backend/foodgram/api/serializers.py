@@ -9,27 +9,6 @@ from users.models import User
 from users.serializers import UserSerializer
 
 
-# class UserSerializer(serializers.ModelSerializer):
-#     """Сериалайзер пользоватлея."""
-#
-#     is_subscribed = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         fields = (
-#             'email',
-#             'id',
-#             'username',
-#             'first_name',
-#             'last_name',
-#             'is_subscribed'
-#         )
-#         read_only_fields = ('is_subscribed', 'id')
-#         model = User
-#
-#     def get_is_subscribed(self, obj):
-#         return True
-
-
 class TagSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Tag."""
 
@@ -64,6 +43,38 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         return obj.id.measurement_unit
 
 
+class Base64ImageField(serializers.ImageField):
+
+    def to_internal_value(self, data):
+        from django.core.files.base import ContentFile
+        import base64
+        import six
+        import uuid
+
+        if isinstance(data, six.string_types):
+            if 'data:' in data and ';base64,' in data:
+                header, data = data.split(';base64,')
+
+            try:
+                decoded_file = base64.b64decode(data)
+            except TypeError:
+                self.fail('invalid_image')
+
+            file_name = str(uuid.uuid4())[:12] # 12 characters are more than enough.
+            file_extension = self.get_file_extension(file_name, decoded_file)
+            complete_file_name = "%s.%s" % (file_name, file_extension, )
+            data = ContentFile(decoded_file, name=complete_file_name)
+
+        return super(Base64ImageField, self).to_internal_value(data)
+
+    def get_file_extension(self, file_name, decoded_file):
+        import imghdr
+
+        extension = imghdr.what(file_name, decoded_file)
+        extension = "jpg" if extension == "jpeg" else extension
+
+        return extension
+
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Recipe."""
 
@@ -75,6 +86,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = IngredientAmountSerializer(many=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+    image = Base64ImageField()
 
     class Meta:
         fields = (
@@ -85,6 +97,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart',
             'name',
+            'image',
             'text',
             'cooking_time'
         )
@@ -104,7 +117,22 @@ class RecipeSerializer(serializers.ModelSerializer):
                 )[0].pk
             )
         instance.ingredients.set(ingredients_ids)
-        # instance.save()
+        return instance
+
+    def update(self, instance, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        instance.tags.set(tags)
+        ingredients_ids = []
+        for ingredient in ingredients:
+            ingredients_ids.append(
+                IngredientAmount.objects.get_or_create(
+                    **ingredient
+                )[0].pk
+            )
+        instance.ingredients.set(ingredients_ids)
+        instance.image = validated_data['image']
+        instance.save()
         return instance
 
     def get_is_favorited(self, obj):

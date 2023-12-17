@@ -11,11 +11,7 @@ router.register('tags', TagViewSet, basename='tags')
 router.register('recipes', RecipeViewSet, basename='recipes')
 router.register('users', UserViewSet, basename='users')
 router.register('ingredients', IngredientViewSet, basename='ingredients')
-# router.register(
-#     r'recipes/(?P<recipe_id>\d+)/shopping_cart',
-#     ShoppingCartViewSet.as_view,
-#     basename='shopping_cart'
-# )
+
 
 urlpatterns = [
     path('', include(router.urls)),

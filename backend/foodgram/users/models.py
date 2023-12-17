@@ -21,6 +21,11 @@ class User(AbstractUser):
     last_name = models.CharField(
         max_length=150
     )
+    is_subscribed = models.ManyToManyField(
+        'self',
+        through='Follow',
+        related_name='user_following'
+    )
 
 class Follow(models.Model):
     """Подписки."""

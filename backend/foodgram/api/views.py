@@ -7,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 
+from api.filters import RecipeFilter
+from api.paginations import PageLimitPagination
 from api.serializers import (
     TagSerializer,
     RecipeSerializer,
@@ -15,6 +17,7 @@ from api.serializers import (
 )
 from recipes.models import Tag, Recipe, ShoppingCart, Ingredient, FavoritesRecipes, IngredientAmount
 from users.models import User
+from users.permissions import IsAuthor
 
 
 class TagViewSet(
@@ -41,10 +44,12 @@ class IngredientViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Recipe."""
 
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.all().select_related('author').order_by('-pub_date')
     serializer_class = RecipeSerializer
-    pagination_class = LimitOffsetPagination
-
+    pagination_class= PageLimitPagination
+    permission_classes = (IsAuthor,)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = RecipeFilter
     def perform_create(self, serializer):
         serializer.save(
             author=self.request.user
