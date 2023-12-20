@@ -1,10 +1,8 @@
-from django.urls import include, path
-from rest_framework.routers import SimpleRouter
-
-from users.views import UserViewSet, get_token, logout
-
 from api.views import (FavoriteViewSet, IngredientViewSet, RecipeViewSet,
                        ShoppingCartViewSet, TagViewSet)
+from django.urls import include, path
+from rest_framework.routers import SimpleRouter
+from users.views import UserViewSet, get_token, logout
 
 router = SimpleRouter()
 

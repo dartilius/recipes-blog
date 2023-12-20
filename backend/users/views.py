@@ -1,3 +1,6 @@
+from api.filters import UserFilter
+from api.paginations import PageLimitPagination
+from api.tokens import CustomAccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
@@ -7,10 +10,6 @@ from rest_framework.response import Response
 from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
                                    HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST,
                                    HTTP_401_UNAUTHORIZED)
-
-from api.filters import UserFilter
-from api.paginations import PageLimitPagination
-from api.tokens import CustomAccessToken
 from users.models import Follow, User
 from users.serializers import (ChangePasswordSerializer,
                                SubscriptionsSerializer, TokenSerializer,

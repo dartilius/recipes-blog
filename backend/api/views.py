@@ -1,7 +1,14 @@
 from io import BytesIO
 
+from api.filters import IngredientFilter, RecipeFilter
+from api.paginations import PageLimitPagination
+from api.serializers import (FavoriteSerializer, IngredientSerializer,
+                             RecipeSerializer, ShoppingCartSerializer,
+                             TagSerializer)
 from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from recipes.models import (FavoritesRecipes, Ingredient, Recipe, ShoppingCart,
+                            Tag)
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -10,14 +17,6 @@ from requests import Response
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-
-from api.filters import IngredientFilter, RecipeFilter
-from api.paginations import PageLimitPagination
-from api.serializers import (FavoriteSerializer, IngredientSerializer,
-                             RecipeSerializer, ShoppingCartSerializer,
-                             TagSerializer)
-from recipes.models import (FavoritesRecipes, Ingredient, Recipe, ShoppingCart,
-                            Tag)
 from users.permissions import IsAuthor
 
 
