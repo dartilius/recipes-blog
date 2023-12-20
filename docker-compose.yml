@@ -34,4 +34,4 @@ services:
       - static:/staticfiles/
       - media:/var/www/foodgram/media/
     ports:
-      - 8000:80
+      - 7000:80

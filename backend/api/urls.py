@@ -3,8 +3,8 @@ from rest_framework.routers import SimpleRouter
 
 from users.views import UserViewSet, get_token, logout
 
-from .views import (FavoriteViewSet, IngredientViewSet, RecipeViewSet,
-                    ShoppingCartViewSet, TagViewSet)
+from api.views import (FavoriteViewSet, IngredientViewSet, RecipeViewSet,
+                       ShoppingCartViewSet, TagViewSet)
 
 router = SimpleRouter()
 
