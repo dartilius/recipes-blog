@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from recipes.models import Recipe
-from users.models import User, Follow
+from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -22,13 +22,30 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('is_subscribed',)
         model = User
 
-
     def get_is_subscribed(self, obj):
         if not self.context.get('request').user.is_authenticated:
             return False
         return obj.following.filter(
             user=self.context.get('request').user
         ).exists()
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    """Сериалайзер пользоватлея."""
+
+    class Meta:
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        )
+        model = User
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
     def validate_username(self, value):
         if value == 'me':
@@ -37,14 +54,14 @@ class UserSerializer(serializers.ModelSerializer):
             )
         return value
 
-
     def create(self, data):
-        return User.objects.create(
+        user = User.objects.create(
             username=data['username'],
             email=data['email'],
             first_name=data['first_name'],
             last_name=data['last_name']
         )
+        return user
 
 
 class TokenSerializer(serializers.Serializer):
@@ -84,7 +101,7 @@ class RecipeUserSerializer(serializers.ModelSerializer):
 class SubscriptionsSerializer(serializers.ModelSerializer):
     """Сериалайзер для подписок."""
 
-    recipes = RecipeUserSerializer(many=True, read_only=True)
+    recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
     is_subscribed = serializers.SerializerMethodField()
 
@@ -111,3 +128,16 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        recipes_limit = self.context.get(
+            'request'
+        ).query_params.get('recipes_limit')
+        if recipes_limit:
+            recipes = obj.recipes.all().order_by(
+                '-pub_date'
+            )[:int(recipes_limit)]
+        else:
+            recipes = obj.recipes.all().order_by('-pub_date')
+        serializer = RecipeUserSerializer(instance=recipes, many=True)
+        return serializer.data

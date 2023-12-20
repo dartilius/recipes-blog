@@ -1,20 +1,28 @@
 from django.contrib import admin
 
-from recipes.models import Tag, Recipe, Ingredient, IngredientAmount, FavoritesRecipes, ShoppingCart
+from recipes.models import (FavoritesRecipes, Ingredient, IngredientAmount,
+                            IngredientRecipe, Recipe, ShoppingCart, Tag)
 
 
 class TagAdmin(admin.ModelAdmin):
     """Тег."""
 
-    list_display = ('name', 'slug')
-    search_fields = ('name', 'slug')
-    list_filter = ('name', 'slug')
+    list_display = ('name', 'slug', 'color')
+    search_fields = ('name', 'slug', 'color')
+    list_filter = ('name', 'slug', 'color')
 
 
 class RecipeAdmin(admin.ModelAdmin):
     """Рецепт."""
 
-    list_display = ('author', 'name', 'text', 'cooking_time')
+    list_display = (
+        'author',
+        'name',
+        'text',
+        'cooking_time',
+        'favorite_count',
+        'pub_date'
+    )
     list_filter = ('author', 'name', 'text', 'cooking_time')
     search_fields = ('author', 'name', 'text', 'cooking_time')
 
@@ -42,7 +50,8 @@ class RecipeTagAdmin(admin.ModelAdmin):
     list_filter = ('recipe', 'tag')
     search_fields = ('recipe', 'tag')
 
-class RecipeIngredientAdmin(admin.ModelAdmin):
+
+class IngredientRecipeAdmin(admin.ModelAdmin):
     """Ингредиенты рецептов."""
 
     list_display = ('recipe', 'ingredient')
@@ -54,5 +63,6 @@ admin.site.register(Tag, TagAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(IngredientAmount, IngredientAmountAdmin)
+admin.site.register(IngredientRecipe, IngredientRecipeAdmin)
 admin.site.register(FavoritesRecipes)
 admin.site.register(ShoppingCart)

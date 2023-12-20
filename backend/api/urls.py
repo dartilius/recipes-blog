@@ -1,9 +1,10 @@
-from django.urls import path, include
-from rest_framework.authtoken import views
+from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
 from users.views import UserViewSet, get_token, logout
-from .views import TagViewSet, RecipeViewSet, IngredientViewSet, ShoppingCartViewSet, FavoriteViewSet
+
+from .views import (FavoriteViewSet, IngredientViewSet, RecipeViewSet,
+                    ShoppingCartViewSet, TagViewSet)
 
 router = SimpleRouter()
 
@@ -41,6 +42,4 @@ urlpatterns = [
         name='token_obtain_pair'
     ),
     path('auth/token/logout/', logout, name='logout')
-    #path('api/users/', signup, name='signup')
-    # path('v1/api-token-auth/', views.obtain_auth_token)
 ]

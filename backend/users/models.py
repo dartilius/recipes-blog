@@ -27,6 +27,7 @@ class User(AbstractUser):
         related_name='user_following'
     )
 
+
 class Follow(models.Model):
     """Подписки."""
 
