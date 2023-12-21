@@ -115,7 +115,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(status=HTTP_400_BAD_REQUEST)
 
     @action(
-        ['GET',],
+        ['GET'],
         detail=False,
         permission_classes=(IsAuthenticated,),
         url_path='subscriptions'
