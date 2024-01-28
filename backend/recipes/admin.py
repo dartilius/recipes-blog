@@ -1,8 +1,10 @@
 from django.contrib import admin
-from recipes.models import (FavoritesRecipes, Ingredient, IngredientAmount,
-                            IngredientRecipe, Recipe, ShoppingCart, Tag)
+from django.db.models import Count
+from recipes.models import (FavoriteRecipe, Ingredient, IngredientAmount,
+                            Recipe, ShoppingCart, Tag)
 
 
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     """Тег."""
 
@@ -10,7 +12,7 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug', 'color')
     list_filter = ('name', 'slug', 'color')
 
-
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """Рецепт."""
 
@@ -22,10 +24,19 @@ class RecipeAdmin(admin.ModelAdmin):
         'favorite_count',
         'pub_date'
     )
-    list_filter = ('author', 'name', 'text', 'cooking_time')
-    search_fields = ('author', 'name', 'text', 'cooking_time')
+    list_filter = ('author__username', 'author__email', 'name', 'text', 'cooking_time')
+    search_fields = ('author__username', 'author__email', 'name', 'text', 'cooking_time')
+
+    def get_queryset(self, request):
+        return Recipe.objects.annotate(
+            favorite_count=Count('favorite_recipes')
+        ).all().select_related('author')
+
+    def favorite_count(self, obj):
+        return obj.favorite_count
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Ингредиент."""
 
@@ -33,35 +44,43 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ('name', 'measurement_unit')
     search_fields = ('name', 'measurement_unit')
 
-
+@admin.register(IngredientAmount)
 class IngredientAmountAdmin(admin.ModelAdmin):
-    """Ингредиент."""
+    """Ингредиенты в рецептах."""
 
-    list_display = ('id', 'amount')
-    list_filter = ('id', 'amount')
-    search_fields = ('id', 'amount')
+    list_display = ('ingredient', 'recipe', 'amount')
+    list_filter = ('ingredient', 'recipe', 'amount')
+    search_fields = ('ingredient', 'recipe', 'amount')
 
-
-class RecipeTagAdmin(admin.ModelAdmin):
-    """Теги рецептов."""
-
-    list_display = ('recipe', 'tag')
-    list_filter = ('recipe', 'tag')
-    search_fields = ('recipe', 'tag')
+    def get_queryset(self, request):
+        return IngredientAmount.objects.all().prefetch_related(
+            'amount_ingredients', 'amount_recipes'
+        )
 
 
-class IngredientRecipeAdmin(admin.ModelAdmin):
-    """Ингредиенты рецептов."""
+@admin.register(FavoriteRecipe)
+class FavoriteRecipeAdmin(admin.ModelAdmin):
+    """Избранные рецепты."""
 
-    list_display = ('recipe', 'ingredient')
-    list_filter = ('recipe', 'ingredient')
-    search_fields = ('recipe', 'ingredient')
+    list_display = ('recipe', 'user')
+    list_filter = ('recipe', 'user__username', 'user__email')
+    search_fields = ('recipe', 'user__username', 'user__email')
+
+    def get_queryset(self, request):
+        return FavoriteRecipe.objects.all().prefetch_related(
+            'favorite_users', 'favorite_recipes'
+        )
 
 
-admin.site.register(Tag, TagAdmin)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(IngredientAmount, IngredientAmountAdmin)
-admin.site.register(IngredientRecipe, IngredientRecipeAdmin)
-admin.site.register(FavoritesRecipes)
-admin.site.register(ShoppingCart)
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    """Списки покупок."""
+
+    list_display = ('recipe', 'user')
+    list_filter = ('recipe', 'user__username', 'user__email')
+    search_fields = ('recipe', 'user__username', 'user__email')
+
+    def get_queryset(self, request):
+        return FavoriteRecipe.objects.all().prefetch_related(
+            'shopping_carts_users', 'shopping_carts_recipes'
+        )

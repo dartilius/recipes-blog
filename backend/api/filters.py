@@ -1,26 +1,16 @@
 from django_filters.rest_framework import (CharFilter, FilterSet,
-                                           MultipleChoiceFilter)
-from recipes.models import Ingredient, Recipe, Tag
+                                           AllValuesMultipleFilter)
+from recipes.models import Ingredient, Recipe
 from users.models import User
 
 
-class AllTagValuesFilter(MultipleChoiceFilter):
-    """Фильтрация по всем полям модели."""
-    @property
-    def field(self):
-        qs = Tag._default_manager.distinct()
-        qs = qs.order_by('slug').values_list('slug', flat=True)
-        self.extra["choices"] = [(o, o) for o in qs]
-        return super().field
-
-
 class RecipeFilter(FilterSet):
-    """Фильтры для произведений."""
+    """Фильтры для рецептов."""
 
     is_in_shopping_cart = CharFilter(method='get_is_in_shopping_cart')
     is_favorited = CharFilter(method='get_is_favorited')
     author = CharFilter(field_name='author__id')
-    tags = AllTagValuesFilter(field_name='tags__slug')
+    tags = AllValuesMultipleFilter(field_name='tags__slug')
 
     class Meta:
         model = Recipe
@@ -51,14 +41,3 @@ class IngredientFilter(FilterSet):
     class Meta:
         model = Ingredient
         fields = ('name',)
-
-
-class UserFilter(FilterSet):
-    """Фильтрация пользователей."""
-
-    first_name = CharFilter(field_name='first_name', lookup_expr='iexact')
-    email = CharFilter(field_name='email', lookup_expr='iexact')
-
-    class Meta:
-        model = User
-        fields = ('first_name', 'email')

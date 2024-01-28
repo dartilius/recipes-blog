@@ -9,22 +9,21 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
+        verbose_name='Имя пользователя',
         validators=[UnicodeUsernameValidator()]
     )
     email = models.EmailField(
         max_length=254,
-        unique=True
+        unique=True,
+        verbose_name='Электронная почта'
     )
     first_name = models.CharField(
-        max_length=150
+        max_length=150,
+        verbose_name='Имя'
     )
     last_name = models.CharField(
-        max_length=150
-    )
-    is_subscribed = models.ManyToManyField(
-        'self',
-        through='Follow',
-        related_name='user_following'
+        max_length=150,
+        verbose_name='Фамилия'
     )
 
 
@@ -48,6 +47,6 @@ class Follow(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'following'],
-                name='unique follow'
+                name='unique_follow'
             )
         ]

@@ -1,8 +1,8 @@
 from api.views import (FavoriteViewSet, IngredientViewSet, RecipeViewSet,
-                       ShoppingCartViewSet, TagViewSet)
+                       ShoppingCartViewSet, TagViewSet, UserViewSet, get_token)
+from django.contrib.auth import views
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
-from users.views import UserViewSet, get_token, logout
 
 router = SimpleRouter()
 
@@ -39,5 +39,5 @@ urlpatterns = [
         get_token,
         name='token_obtain_pair'
     ),
-    path('auth/token/logout/', logout, name='logout')
+    path('auth/token/logout/', views.LogoutView.as_view(), name='logout')
 ]
